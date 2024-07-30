@@ -13,7 +13,9 @@ class Session(models.Model):
     last_used = models.DateTimeField()
 
     file = models.OneToOneField("File", on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sessions"
+    )
 
     def __str__(self):
         return self.hash_serial
