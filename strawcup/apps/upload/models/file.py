@@ -8,7 +8,11 @@ from django.conf import settings
 
 
 def get_upload_to(instance, filename):
-    username_hash = sha1(instance.user.username.encode()).hexdigest()
+    username = "username"
+    if instance.user is not None:
+        username = instance.user.username
+
+    username_hash = sha1(username.encode()).hexdigest()
     return f"{username_hash}/{filename}"
 
 
@@ -21,7 +25,13 @@ class File(models.Model):
     updated_at = models.DateTimeField(auto_now_add=True)
 
     file_type = models.ForeignKey("FileType", on_delete=models.RESTRICT, related_name="files")
-    folder = models.ForeignKey("Folder", on_delete=models.RESTRICT, related_name="files")
+    folder = models.ForeignKey(
+        "Folder",
+        on_delete=models.RESTRICT,
+        related_name="files",
+        null=True,
+        blank=True
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -35,6 +45,10 @@ class File(models.Model):
         return self.f.size
 
     @property
+    def url(self):
+        return self.f.url
+
+    @property
     def basename(self):
         return path.basename(self.f.name)
 
@@ -45,3 +59,16 @@ class File(models.Model):
     @property
     def extension(self):
         return path.splitext(self.basename)[1].lower()
+
+    def _pre_save(self):
+        self.name = self.name or self.stem
+
+    def _post_save(self):
+        pass
+
+    def save(
+        self, force_insert=False, force_update=False, using=None, update_fields=None
+    ):
+        self._pre_save()
+        super().save(force_insert, force_update, using, update_fields)
+        self._post_save()
