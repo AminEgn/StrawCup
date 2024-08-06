@@ -15,9 +15,12 @@ class FileUploadView(generics.CreateAPIView):
     serializer_class = FileSerializer
 
     def post(self, request, *args, **kwargs):
-        uploaded_file = request.FILES.get("f", None) or request.FILES.get("file", None)
+        # the request creates instance of one of file handlers
+        # (MemoryFileUploadHandler, TemporaryFileUploadHandler)
+
+        uploaded_file = request.FILES.get("f", None)
         if uploaded_file is None:
-            message = "No file found, please specify 'f' or 'file' to upload."
+            message = "No file found, please specify 'f' to upload."
             return response.Response(message, status=status.HTTP_400_BAD_REQUEST)
 
         if not hasattr(request, "content_type"):
@@ -30,18 +33,22 @@ class FileUploadView(generics.CreateAPIView):
         if uploaded_file.size > 5242880:  # 5MB
             raise exceptions.NotAcceptable("use session upload to upload more than 5MB files")
 
-        # print(physical.size, content_length)
+        # content-length also includes metadata which increases size of content-length
+        # in addition http uses compression like gzip to reduce size
         # if physical.size != int(content_length):
         #     print(physical.size - int(content_length))
         #     raise exceptions.NotAcceptable("content len is not same")
-
+        # the Django itself likely to parse files with multipart/...
         # get or 415 unsupported media type
-        file_type = FileType.objects.filter(
-            mime_type=uploaded_file.content_type, is_active=True
-        ).first()
-        if file_type is None:
-            raise exceptions.UnsupportedMediaType("not supported")
+        # file_type = FileType.objects.filter(
+        #     mime_type=uploaded_file.content_type, is_active=True
+        # ).first()
+        # if file_type is None:
+        #     print("-> not supported")
+        #     raise exceptions.UnsupportedMediaType("not supported")
+
+        # also Django checks for name of the file, so it doesn't allow / or \\ in file's name
+        # def sanitize_file_name
 
         request.data["f"] = uploaded_file
-        request.data["file_type"] = file_type.id
         return super().post(request, *args, **kwargs)
