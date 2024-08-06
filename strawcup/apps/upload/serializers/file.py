@@ -16,5 +16,4 @@ class FileSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "name": {"required": False},
             "folder": {"required": False, "write_only": True},
-            "file_type": {"write_only": True}
         }
