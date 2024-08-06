@@ -24,7 +24,14 @@ class File(models.Model):
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now_add=True)
 
-    file_type = models.ForeignKey("FileType", on_delete=models.RESTRICT, related_name="files")
+    file_type = models.ForeignKey(
+        "FileType",
+        on_delete=models.RESTRICT,
+        related_name="files",
+        # no need for experimental server
+        null=True,
+        blank=True
+    )
     folder = models.ForeignKey(
         "Folder",
         on_delete=models.RESTRICT,
@@ -59,6 +66,10 @@ class File(models.Model):
     @property
     def extension(self):
         return path.splitext(self.basename)[1].lower()
+
+    def append_mode(self, data):
+        with open(self.f.path, "a") as f:
+            f.write(data)
 
     def _pre_save(self):
         self.name = self.name or self.stem
