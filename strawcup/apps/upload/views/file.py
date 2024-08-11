@@ -27,6 +27,7 @@ class FileUploadView(generics.CreateAPIView):
             raise exceptions.NotAcceptable("content type not specified")
 
         content_length = request.headers.get("CONTENT_LENGTH", "")
+        # it's not necessary to check content_length is decimal
         if not content_length or not content_length.isdecimal():
             raise exceptions.NotAcceptable("content len is wrong")
 
