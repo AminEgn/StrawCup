@@ -22,7 +22,9 @@ class Session(models.Model):
         max_length=15, choices=Status.choices, default=Status.CREATED
     )
     hash_serial = models.CharField(max_length=70, unique=True, default=uuid.uuid4)
-    chunked = models.BooleanField(default=False)
+    # chunked default has to be True, because if not chunked uploading is selected
+    # the file size maybe more than maximum size of the memory
+    chunked = models.BooleanField(default=True)
     file_size = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now=True)
     last_used = models.DateTimeField(default=timezone.now)
