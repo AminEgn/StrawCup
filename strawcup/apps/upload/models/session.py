@@ -26,8 +26,8 @@ class Session(models.Model):
     # the file size maybe more than maximum size of the memory
     chunked = models.BooleanField(default=True)
     file_size = models.PositiveIntegerField()
-    created_at = models.DateTimeField(auto_now=True)
-    last_used = models.DateTimeField(default=timezone.now)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used = models.DateTimeField(null=True, blank=True)
 
     file = models.OneToOneField(
         "File", on_delete=models.CASCADE, related_name="session", null=True, blank=True
