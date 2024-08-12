@@ -21,8 +21,8 @@ class File(models.Model):
 
     name = models.CharField(max_length=255)
     f = models.FileField(upload_to=get_upload_to)
-    created_at = models.DateTimeField(auto_now=True)
-    updated_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     file_type = models.ForeignKey(
         "FileType",
@@ -67,9 +67,14 @@ class File(models.Model):
     def extension(self):
         return path.splitext(self.basename)[1].lower()
 
-    def append_mode(self, data):
-        with open(self.f.path, "a") as f:
-            f.write(data)
+    def append_chunk(self, uploaded_file):
+        # this method should assume the content-range for write
+        # also this should check if file is used by another process
+        with open(uploaded_file.file.name, "rb") as uf:
+            with open(self.f.path, "ab") as f:
+                f.writelines(uf.readlines())
+
+        self.save()
 
     def _pre_save(self):
         self.name = self.name or self.stem
